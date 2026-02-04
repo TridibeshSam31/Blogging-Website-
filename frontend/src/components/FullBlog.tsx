@@ -1,5 +1,6 @@
 import { Navbar } from "../components/Navbar"
 import { Blog } from "../hooks/useBlog"
+import { Avatar } from "./BlogCard"
 
 export const FullBlog = ({blog}:{blog:Blog}) => {
     return(
@@ -20,7 +21,22 @@ export const FullBlog = ({blog}:{blog:Blog}) => {
             </div>
 
             <div className=" col-span-4">
-                {blog.author.name || "Unknown Author"}
+                <div className="text-slate-600">
+                    Author
+                </div>
+                <div className="flex w-full">
+                    <div className="pr-4 flex flex-col justify-center">
+                        <Avatar size="big" name={blog.author.name || "Unknown Author"}/>
+                    </div>
+
+                </div>
+
+                 <div>
+                    <div className="text-xl font-bold">
+                  {blog.author.name || "Unknown Author"}
+                    </div>
+                 </div>
+
                 <div className="pt-3 text-slate-500">
                     Author Bio , I will add it in backend route 
                 </div>
