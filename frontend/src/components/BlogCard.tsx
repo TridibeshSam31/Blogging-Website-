@@ -1,5 +1,6 @@
 //@ts-ignore
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 
 
@@ -8,13 +9,15 @@ interface BlogCardProps{
     title:string,
     content:string,
     publishDate:string,
+    id:number
 
 }
 
-const BlogCard = ({authorName,title,content,publishDate}:BlogCardProps) => {
+const BlogCard = ({id,authorName,title,content,publishDate}:BlogCardProps) => {
   return (
     //state management will be done by creating a custom hook 
-    <div className='p-4 border-b border-slate-200 pb-4'>
+  <Link to={`/blog/${id}`}>
+    <div className='p-4 border-b border-slate-200 pb-4 w-screen max-w-screen-md cursor-pointer'>
         <div className='flex'>
             
               <Avatar size={"small"} name={authorName}/>  
@@ -41,6 +44,7 @@ const BlogCard = ({authorName,title,content,publishDate}:BlogCardProps) => {
 
         </div>
     </div>
+  </Link>
   )
 }
 

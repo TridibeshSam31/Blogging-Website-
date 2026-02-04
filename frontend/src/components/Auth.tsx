@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import {SignupInput} from "@tridibeshsamantroy/blog-common"
 //@ts-ignore
 const Auth = ({type}:{type:"signup"|"signin"}) => {
+    //we could have used that old method i.e having three state variables name , usernamae,password and then seperaely set them instead of using spreadoperator
     const [postInputs,setPostInputs] = useState<SignupInput>({
         name:"",
         username:"",

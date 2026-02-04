@@ -1,8 +1,11 @@
-import React,{useState,useEffect} from 'react'
+
+import { useEffect, useState } from "react"
 import axios from "axios"
 import {BACKEND_URL} from "../config"
 
-export interface Blog{
+
+
+interface Blog{
   "content":string,
   "title":string,
   "id":number,
@@ -12,26 +15,28 @@ export interface Blog{
 
 }
 
-const useBlog = () => {
+
+
+
+export const useBlogs = ({id}:{id:String}) => {
     const [loading,setLoading] = useState(true)
-    const [blog,setBlogs] = useState<Blog[]>([])
+    const [blogs,setBlogs] = useState<Blog[]>([])
 
         useEffect(() => {
-            axios.get(`${BACKEND_URL}/api/v1/blog/bulk`, {
+            axios.get(`${BACKEND_URL}/api/v1/blog/${id}`, {
               headers:{
                 Authorization: localStorage.getItem("token") || ""
               }
             })
             .then((Response)=>{
-                setBlogs(Response.data.blog)
+                setBlogs(Response.data.blogs)
                 setLoading(false)
             })
-        },[])
+        },[id])
     
   return {
     loading,
-    blog
+    blogs
   }
-}
 
-export default useBlog
+}
