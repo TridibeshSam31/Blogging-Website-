@@ -53,11 +53,11 @@ blogRouter.post('/',async(c)=>{
     const authorId = c.get("userId")
     const prisma = getPrismaClient(c.env.DATABASE_URL)
 
-   const blog = await prisma.blog.create({
+   const blog = await prisma.post.create({
     data:{
         title:body.title,
         content:body.content,
-        authorId: Number(authorId)
+        authorId: authorId || "1"
     }
    })
    return c.json({
@@ -75,7 +75,7 @@ blogRouter.put('/',async(c)=>{
     }
     const prisma = getPrismaClient(c.env.DATABASE_URL)
 
-   const blog = await prisma.blog.update({
+   const blog = await prisma.post.update({
     where:{
         id:body.id
     },
@@ -96,7 +96,7 @@ blogRouter.get('/bulk',async(c)=>{
     
     const prisma = getPrismaClient(c.env.DATABASE_URL)
 
-    const blogs = await prisma.blog.findMany({
+    const blogs = await prisma.post.findMany({
         select:{
            content:true,
            title:true,
@@ -123,9 +123,9 @@ blogRouter.get('/:id',async(c)=>{
     const prisma = getPrismaClient(c.env.DATABASE_URL)
 
    try {
-    const blog = await prisma.blog.findFirst({
+    const blog = await prisma.post.findFirst({
      where:{
-         id: Number(id)
+         id: id
         },
         select:{
             id:true,
