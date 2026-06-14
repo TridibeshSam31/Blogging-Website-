@@ -6,7 +6,7 @@ type Bindings = {
 }
 
 export default {
-  // ✅ Now fully typed
+  //prisma error solved prisma v5 error
   fetch(request: Request, env: Bindings, ctx: ExecutionContext) {
     return app.fetch(request, env, ctx)
   },
