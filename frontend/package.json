@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "@tiptap/pm": "^3.27.1",
+    "@tiptap/react": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
     "@tridibeshsamantroy/blog-common": "^1.0.1",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
