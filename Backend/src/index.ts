@@ -4,6 +4,7 @@ import { blogRouter } from './routes/blog'
 
 const app = new Hono()
 
+//heathcheck route 
 app.get('/', (c) => {
   return c.json({ 
     message: 'Backend is running!',

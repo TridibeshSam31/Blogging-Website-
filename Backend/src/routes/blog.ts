@@ -27,7 +27,7 @@ blogRouter.use("/*", async(c,next)=>{
         if (user) {
             //@ts-ignore
             c.set("userId", user.id)
-            next()
+            await next()
         } else {
             c.status(403)
             return c.json({

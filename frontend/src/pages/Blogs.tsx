@@ -1,36 +1,45 @@
-//@ts-ignore
 import React from 'react'
 import BlogCard from '../components/BlogCard'
 import { Navbar } from '../components/Navbar'
-import useBlog from '../hooks/useBlog'
+import { useBlogs } from '../hooks/useBlogs'
+import { BlogCardSkeleton } from '../components/BlogSkeleton'
 
 const Blogs = () => {
-
-  const {loading,blog} = useBlog()
+  const { loading, blogs } = useBlogs()
 
   if (loading) {
-    return <div>Loading...</div>
-    
-  }
-  return (
-  <div>
-   <Navbar/>
-    <div className='flex justify-center'>
+    return (
       <div>
-        {blog.map(blog => (
-          <BlogCard 
-             id={blog.id}
-            key={blog.id}
-            authorName={blog.author.name || "Unkonwn"}
-            title={blog.title}
-            content={blog.content}
-            publishDate={"June 20, 2025"} 
-          />
-        ))}
+        <Navbar />
+        <div className='flex justify-center'>
+          <div>
+            <BlogCardSkeleton />
+            <BlogCardSkeleton />
+            <BlogCardSkeleton />
+          </div>
+        </div>
       </div>
-        
+    )
+  }
+
+  return (
+    <div>
+      <Navbar />
+      <div className='flex justify-center'>
+        <div>
+          {blogs.map(blog => (
+            <BlogCard
+              id={blog.id}
+              key={blog.id}
+              authorName={blog.author.name || "Unknown"}
+              title={blog.title}
+              content={blog.content}
+              publishDate={"June 20, 2025"}
+            />
+          ))}
+        </div>
+      </div>
     </div>
-  </div>
   )
 }
 
