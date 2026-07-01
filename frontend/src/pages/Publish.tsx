@@ -16,6 +16,30 @@ const Publish = () => {
   const navigate = useNavigate()
 
   const handlePublish = async () => {
+    try {
+
+      if (!title || !title.trim() || !content || !content.trim()) {
+
+        setError("Title and content cannot be Empty")
+      }
+      setLoading(true)
+
+      const token = localStorage.getItem("token")
+      const response = await axios.post(`${BACKEND_URL}/api/v1/blog`,
+        { title, content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+
+      navigate("/blogs")
+
+    } catch {
+      setError("Failed to publish . pls try again")
+
+    } finally {
+      setLoading(true)
+
+    }
   }
 
   return (
