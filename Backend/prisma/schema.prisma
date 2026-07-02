@@ -24,7 +24,7 @@ model Post {
   published Boolean @default(false)
   authorId  String
   author    User    @relation(fields: [authorId], references: [id])
-  comments Comment[]
+  comments comment[]
   likes    like[]
 }
 

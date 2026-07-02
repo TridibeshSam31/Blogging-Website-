@@ -164,5 +164,223 @@ blogRouter.get('/:id', async (c) => {
 
 
 
+//blog/:id/comment
+
+//so what we have to do is take postId first 
+//then check for existing posts 
+//get userId 
+//create comment and return it 
+
+blogRouter.post('/:id/comment',async(c)=>{
+    try{
+    const postId = c.req.param('id')
+    const body = await c.req.json()
+    const authorId = c.get("userId")
+
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
+
+    const existingPost = await prisma.post.findMany({
+        where:{
+            id:postId
+        }
+    })
+
+    console.log(existingPost)
+
+    if(existingPost.length===0){
+        c.status(404)
+        return c.json({
+            message: "No post found with the given id"
+        })
+    }
+
+    if(!authorId){
+        c.status(403)
+        return c.json({
+            message:"You are not logged in "
+        })
+    }
+
+    const comment = await prisma.comment.create({
+        data:{
+            comment:body.comment,
+            postId:postId,
+            authorId:authorId
+        }
+    })
+   
+
+    return c.json({
+        comment
+
+    })
+    
+
+
+ }catch(error){
+    c.status(500)
+    return c.json({
+        message:"Error while Creating comment"
+    })
+
+   }
+
+
+    
+})
+
+
+
+//delete comment and update comment routes 
+//find comment 
+//find auther and post 
+//delete comment if authorId matches
+
+blogRouter.delete('/:id/comment/:commentId',async(c)=>{
+    try{
+        const postId = c.req.param('id')
+        const commentId = c.req.param('commentId')
+        const authorId = c.get("userId")
+        const prisma = getPrismaClient(c.env.DATABASE_URL)
+
+        const comment = await prisma.comment.findFirst({
+            where:{
+                id:commentId,
+                authorId:authorId,
+                postId:postId
+
+            }
+        
+        })
+
+        console.log(comment)
+
+        if(!comment){
+            c.status(404)
+            return c.json({
+                message:"No comment found with the given Id"
+            })
+        }
+        
+        /*
+        const findAuthor = await prisma.comment.findFirst({
+            where:{
+                id:commentId,
+                authorId:authorId
+            }
+        })
+        */
+
+        if(comment.authorId!==authorId){
+            c.status(403)
+            return c.json({
+                message:"You are not authorized to delete this comment"
+            })
+        }
+
+        if(comment.postId!==postId){
+            c.status(404)
+            return c.json({
+                message:"No comment found with the given PostId"
+            })
+        }
+
+        const deletedComment = await prisma.comment.delete({
+            where:{
+                id:commentId
+
+            }
+        })
+
+
+        return c.json({
+            deletedComment
+        })
+
+
+
+
+
+
+
+
+    }catch(error){
+    c.status(500)
+    return c.json({
+        message:"Error while deleting comment"
+    })
+
+
+    }
+})
+
+
+//updating comment PATCH 
+
+blogRouter.patch('/:id/comment/:commentId',async(c)=>{
+    const postId = c.req.param('id')
+    const commentId = c.req.param('commentId')
+    const body = await c.req.json()
+    const authorId = c.get("userId")
+
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
+
+    const FindComment = await prisma.comment.findFirst({
+       where:{
+        id:commentId,
+        authorId:authorId,
+        postId:postId
+       }
+
+    })
+
+    console.log(FindComment)
+
+    if(!FindComment){
+        c.status(404)
+        return c.json({
+            message:"No comment found with the given id"
+        })
+    }
+
+    if(FindComment.authorId!==authorId){
+        c.status(403)
+        return c.json({
+            message:"You are not authorized to update this comment"
+        })
+    }
+
+    if(FindComment.postId!==postId){
+     c.status(403)
+        return c.json({
+            message:"You are not authorized to update this comment"
+        })
+
+    }
+
+    const updatedComment = await prisma.comment.update({
+        where:{
+            id:commentId
+
+        },
+        data:{
+            comment:body.comment
+        }
+
+
+    })
+
+
+    c.status(200)
+    return c.json({
+        updatedComment
+    })
+
+})
+
+
+
+//create and delete like routes
+
 
 
