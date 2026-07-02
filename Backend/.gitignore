@@ -9,3 +9,4 @@ package.json
 tsconfig.json
 wrangler.jsonc
 test-direct.mjs
+.wrangler
