@@ -1,7 +1,7 @@
  Debugging Journal
 
 
- 
+
 Issue 1: Database Connection Error
 Error
 Signin error:
@@ -308,3 +308,7 @@ Schema and database must always match.
 Cloudflare wrangler dev uses .dev.vars, not dashboard secrets.
 JWT verification APIs can change between framework versions—always check library release notes when upgrading.
 Debug one layer at a time. Don't jump between environment variables, ORM, frontend, and authentication simultaneously. Eliminate possibilities systematically.
+
+
+
+deployed the project at  https://blogging-website-frontend-9f831feu6.vercel.app
