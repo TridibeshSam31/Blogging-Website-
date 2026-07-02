@@ -381,6 +381,192 @@ blogRouter.patch('/:id/comment/:commentId',async(c)=>{
 
 
 //create and delete like routes
+blogRouter.post('/:id/like',async(c)=>{
+
+    try{
+
+    const postId = c.req.param('id')
+    const userId = c.get("userId")
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
 
 
+    const existingPost = await prisma.post.findMany({
+        where:{
+            id:postId
+        }
+    })
+
+    console.log(existingPost)
+
+    if(existingPost.length===0){
+        return c.json({
+            message:"No post exist with the id"
+        })
+    }
+
+    if(!userId){
+        c.status(403)
+        return c.json({
+            message:"You are not logged in"
+        })
+    }
+
+    const existingLike = await prisma.like.findFirst({
+        where:{
+            postId:postId,
+            userId:userId
+        }
+    })
+
+    if(existingLike){
+        return c.json({
+            message:"You have already liked this post"
+        })
+    }
+
+    const createLike = await prisma.like.create({
+        data:{
+            postId:postId,
+            userId:userId
+        }
+    })
+
+    c.status(200)
+    return c.json({
+        createLike
+    })
+
+}catch(error){
+    c.status(500)
+    return c.json({
+        message:"Error while creating Like"
+    })
+}
+
+})
+
+
+//delete like 
+
+
+blogRouter.delete('/:id/like/:likeId',async(c)=>{
+    try{
+    const postId = c.req.param('id')
+    const likeId = c.req.param('likeId')
+    const userId = c.get("userId")
+
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
+
+    
+    const post = await prisma.post.findUnique({
+    where: {
+        id: postId
+    }
+})
+
+if (!post) {
+    return c.json({
+        message: "Post not found"
+    }, 404)
+}
+
+const like = await prisma.like.findFirst({
+    where: {
+        id: likeId,
+        postId,
+        userId
+    }
+})
+
+if (!like) {
+    return c.json({
+        message: "Like not found"
+    }, 404)
+}
+
+await prisma.like.delete({
+    where: {
+        id: like.id
+    }
+})
+
+ return c.json({
+    message: "Like removed successfully",
+
+   })
+}catch(error){
+    c.status(500)
+    return c.json({
+        message:"unable to unlike"
+    })
+
+}
+
+
+})
+
+//DELETE /blog/:id
+
+blogRouter.delete("/:id", async (c) => {
+    const postId = c.req.param("id");
+    const userId = c.get("userId");
+
+    const prisma = getPrismaClient(c.env.DATABASE_URL);
+
+    const post = await prisma.post.findUnique({
+        where: {
+            id: postId
+        }
+    });
+
+    if (!post) {
+        return c.json({
+            message: "Blog not found"
+        }, 404);
+    }
+
+    if (post.authorId !== userId) {
+        return c.json({
+            message: "You are not authorized to delete this blog"
+        }, 403);
+    }
+
+    await prisma.post.delete({
+        where: {
+            id: postId
+        }
+    });
+
+    return c.json({
+        message: "Blog deleted successfully"
+    });
+});
+
+
+
+blogRouter.get("/me/blogs", async (c) => {
+    const userId = c.get("userId");
+
+    const prisma = getPrismaClient(c.env.DATABASE_URL);
+
+    const blogs = await prisma.post.findMany({
+        where: {
+            authorId: userId
+        },
+        orderBy: {
+            createdAt: "desc"
+        },
+        select: {
+            id: true,
+            title: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true
+        }
+    });
+
+    return c.json({
+        blogs
+    });
+});
 
