@@ -29,6 +29,7 @@ const Blogs = () => {
         <div>
           {blogs.map(blog => (
             <BlogCard
+            //@ts-ignore
               id={blog.id}
               key={blog.id}
               authorName={blog.author.name || "Unknown"}

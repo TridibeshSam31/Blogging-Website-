@@ -27,7 +27,7 @@ const Publish = () => {
       const token = localStorage.getItem("token")
       const response = await axios.post(`${BACKEND_URL}/api/v1/blog`,
         { title, content },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: token || "" } }
       )
 
 

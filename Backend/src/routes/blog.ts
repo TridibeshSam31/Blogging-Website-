@@ -1,13 +1,12 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client/edge"
-import { withAccelerate } from "@prisma/extension-accelerate"
+import { PrismaClient } from "@prisma/client"
+import { PrismaNeon } from "@prisma/adapter-neon"
 import { verify } from "hono/jwt"
 import { createBlogInput, updateBlogInput } from "@tridibeshsamantroy/blog-common";
 
 const getPrismaClient = (databaseUrl: string) => {
-    return new PrismaClient({
-        datasourceUrl: databaseUrl,
-    }).$extends(withAccelerate());
+    const adapter = new PrismaNeon({ connectionString: databaseUrl })
+    return new PrismaClient({ adapter })
 };
 
 export const blogRouter = new Hono<{
@@ -23,6 +22,7 @@ export const blogRouter = new Hono<{
 blogRouter.use("/*", async (c, next) => {
     const authHeader = c.req.header("Authorization") || ""
     try {
+        //@ts-ignore
         const user = await verify(authHeader, c.env.JWT_SECRET)
         if (user) {
             //@ts-ignore
@@ -196,62 +196,62 @@ blogRouter.get('/:id', async (c) => {
 //get userId 
 //create comment and return it 
 
-blogRouter.post('/:id/comment',async(c)=>{
-    try{
-    const postId = c.req.param('id')
-    const body = await c.req.json()
-    const authorId = c.get("userId")
+blogRouter.post('/:id/comment', async (c) => {
+    try {
+        const postId = c.req.param('id')
+        const body = await c.req.json()
+        const authorId = c.get("userId")
 
-    const prisma = getPrismaClient(c.env.DATABASE_URL)
+        const prisma = getPrismaClient(c.env.DATABASE_URL)
 
-    const existingPost = await prisma.post.findMany({
-        where:{
-            id:postId
-        }
-    })
-
-    console.log(existingPost)
-
-    if(existingPost.length===0){
-        c.status(404)
-        return c.json({
-            message: "No post found with the given id"
+        const existingPost = await prisma.post.findMany({
+            where: {
+                id: postId
+            }
         })
+
+        console.log(existingPost)
+
+        if (existingPost.length === 0) {
+            c.status(404)
+            return c.json({
+                message: "No post found with the given id"
+            })
+        }
+
+        if (!authorId) {
+            c.status(403)
+            return c.json({
+                message: "You are not logged in "
+            })
+        }
+
+        const comment = await prisma.comment.create({
+            data: {
+                comment: body.comment,
+                postId: postId,
+                authorId: authorId
+            }
+        })
+
+
+        return c.json({
+            comment
+
+        })
+
+
+
+    } catch (error) {
+        c.status(500)
+        return c.json({
+            message: "Error while Creating comment"
+        })
+
     }
 
-    if(!authorId){
-        c.status(403)
-        return c.json({
-            message:"You are not logged in "
-        })
-    }
-
-    const comment = await prisma.comment.create({
-        data:{
-            comment:body.comment,
-            postId:postId,
-            authorId:authorId
-        }
-    })
-   
-
-    return c.json({
-        comment
-
-    })
-    
 
 
- }catch(error){
-    c.status(500)
-    return c.json({
-        message:"Error while Creating comment"
-    })
-
-   }
-
-
-    
 })
 
 
@@ -261,32 +261,32 @@ blogRouter.post('/:id/comment',async(c)=>{
 //find auther and post 
 //delete comment if authorId matches
 
-blogRouter.delete('/:id/comment/:commentId',async(c)=>{
-    try{
+blogRouter.delete('/:id/comment/:commentId', async (c) => {
+    try {
         const postId = c.req.param('id')
         const commentId = c.req.param('commentId')
         const authorId = c.get("userId")
         const prisma = getPrismaClient(c.env.DATABASE_URL)
 
         const comment = await prisma.comment.findFirst({
-            where:{
-                id:commentId,
-                authorId:authorId,
-                postId:postId
+            where: {
+                id: commentId,
+                authorId: authorId,
+                postId: postId
 
             }
-        
+
         })
 
         console.log(comment)
 
-        if(!comment){
+        if (!comment) {
             c.status(404)
             return c.json({
-                message:"No comment found with the given Id"
+                message: "No comment found with the given Id"
             })
         }
-        
+
         /*
         const findAuthor = await prisma.comment.findFirst({
             where:{
@@ -296,23 +296,23 @@ blogRouter.delete('/:id/comment/:commentId',async(c)=>{
         })
         */
 
-        if(comment.authorId!==authorId){
+        if (comment.authorId !== authorId) {
             c.status(403)
             return c.json({
-                message:"You are not authorized to delete this comment"
+                message: "You are not authorized to delete this comment"
             })
         }
 
-        if(comment.postId!==postId){
+        if (comment.postId !== postId) {
             c.status(404)
             return c.json({
-                message:"No comment found with the given PostId"
+                message: "No comment found with the given PostId"
             })
         }
 
         const deletedComment = await prisma.comment.delete({
-            where:{
-                id:commentId
+            where: {
+                id: commentId
 
             }
         })
@@ -329,11 +329,11 @@ blogRouter.delete('/:id/comment/:commentId',async(c)=>{
 
 
 
-    }catch(error){
-    c.status(500)
-    return c.json({
-        message:"Error while deleting comment"
-    })
+    } catch (error) {
+        c.status(500)
+        return c.json({
+            message: "Error while deleting comment"
+        })
 
 
     }
@@ -342,7 +342,7 @@ blogRouter.delete('/:id/comment/:commentId',async(c)=>{
 
 //updating comment PATCH 
 
-blogRouter.patch('/:id/comment/:commentId',async(c)=>{
+blogRouter.patch('/:id/comment/:commentId', async (c) => {
     const postId = c.req.param('id')
     const commentId = c.req.param('commentId')
     const body = await c.req.json()
@@ -351,45 +351,45 @@ blogRouter.patch('/:id/comment/:commentId',async(c)=>{
     const prisma = getPrismaClient(c.env.DATABASE_URL)
 
     const FindComment = await prisma.comment.findFirst({
-       where:{
-        id:commentId,
-        authorId:authorId,
-        postId:postId
-       }
+        where: {
+            id: commentId,
+            authorId: authorId,
+            postId: postId
+        }
 
     })
 
     console.log(FindComment)
 
-    if(!FindComment){
+    if (!FindComment) {
         c.status(404)
         return c.json({
-            message:"No comment found with the given id"
+            message: "No comment found with the given id"
         })
     }
 
-    if(FindComment.authorId!==authorId){
+    if (FindComment.authorId !== authorId) {
         c.status(403)
         return c.json({
-            message:"You are not authorized to update this comment"
+            message: "You are not authorized to update this comment"
         })
     }
 
-    if(FindComment.postId!==postId){
-     c.status(403)
+    if (FindComment.postId !== postId) {
+        c.status(403)
         return c.json({
-            message:"You are not authorized to update this comment"
+            message: "You are not authorized to update this comment"
         })
 
     }
 
     const updatedComment = await prisma.comment.update({
-        where:{
-            id:commentId
+        where: {
+            id: commentId
 
         },
-        data:{
-            comment:body.comment
+        data: {
+            comment: body.comment
         }
 
 
@@ -406,67 +406,67 @@ blogRouter.patch('/:id/comment/:commentId',async(c)=>{
 
 
 //create and delete like routes
-blogRouter.post('/:id/like',async(c)=>{
+blogRouter.post('/:id/like', async (c) => {
 
-    try{
+    try {
 
-    const postId = c.req.param('id')
-    const userId = c.get("userId")
-    const prisma = getPrismaClient(c.env.DATABASE_URL)
+        const postId = c.req.param('id')
+        const userId = c.get("userId")
+        const prisma = getPrismaClient(c.env.DATABASE_URL)
 
 
-    const existingPost = await prisma.post.findMany({
-        where:{
-            id:postId
+        const existingPost = await prisma.post.findMany({
+            where: {
+                id: postId
+            }
+        })
+
+        console.log(existingPost)
+
+        if (existingPost.length === 0) {
+            return c.json({
+                message: "No post exist with the id"
+            })
         }
-    })
 
-    console.log(existingPost)
+        if (!userId) {
+            c.status(403)
+            return c.json({
+                message: "You are not logged in"
+            })
+        }
 
-    if(existingPost.length===0){
+        const existingLike = await prisma.like.findFirst({
+            where: {
+                postId: postId,
+                userId: userId
+            }
+        })
+
+        if (existingLike) {
+            return c.json({
+                message: "You have already liked this post"
+            })
+        }
+
+        const createLike = await prisma.like.create({
+            data: {
+                postId: postId,
+                userId: userId
+            }
+        })
+
+        c.status(200)
         return c.json({
-            message:"No post exist with the id"
+            createLike
+        })
+
+    } catch (error) {
+        c.status(500)
+        return c.json({
+            message: "Error while creating Like"
         })
     }
-
-    if(!userId){
-        c.status(403)
-        return c.json({
-            message:"You are not logged in"
-        })
-    }
-
-    const existingLike = await prisma.like.findFirst({
-        where:{
-            postId:postId,
-            userId:userId
-        }
-    })
-
-    if(existingLike){
-        return c.json({
-            message:"You have already liked this post"
-        })
-    }
-
-    const createLike = await prisma.like.create({
-        data:{
-            postId:postId,
-            userId:userId
-        }
-    })
-
-    c.status(200)
-    return c.json({
-        createLike
-    })
-
-}catch(error){
-    c.status(500)
-    return c.json({
-        message:"Error while creating Like"
-    })
-}
 
 })
 
@@ -474,58 +474,58 @@ blogRouter.post('/:id/like',async(c)=>{
 //delete like 
 
 
-blogRouter.delete('/:id/like/:likeId',async(c)=>{
-    try{
-    const postId = c.req.param('id')
-    const likeId = c.req.param('likeId')
-    const userId = c.get("userId")
+blogRouter.delete('/:id/like/:likeId', async (c) => {
+    try {
+        const postId = c.req.param('id')
+        const likeId = c.req.param('likeId')
+        const userId = c.get("userId")
 
-    const prisma = getPrismaClient(c.env.DATABASE_URL)
+        const prisma = getPrismaClient(c.env.DATABASE_URL)
 
-    
-    const post = await prisma.post.findUnique({
-    where: {
-        id: postId
+
+        const post = await prisma.post.findUnique({
+            where: {
+                id: postId
+            }
+        })
+
+        if (!post) {
+            return c.json({
+                message: "Post not found"
+            }, 404)
+        }
+
+        const like = await prisma.like.findFirst({
+            where: {
+                id: likeId,
+                postId,
+                userId
+            }
+        })
+
+        if (!like) {
+            return c.json({
+                message: "Like not found"
+            }, 404)
+        }
+
+        await prisma.like.delete({
+            where: {
+                id: like.id
+            }
+        })
+
+        return c.json({
+            message: "Like removed successfully",
+
+        })
+    } catch (error) {
+        c.status(500)
+        return c.json({
+            message: "unable to unlike"
+        })
+
     }
-})
-
-if (!post) {
-    return c.json({
-        message: "Post not found"
-    }, 404)
-}
-
-const like = await prisma.like.findFirst({
-    where: {
-        id: likeId,
-        postId,
-        userId
-    }
-})
-
-if (!like) {
-    return c.json({
-        message: "Like not found"
-    }, 404)
-}
-
-await prisma.like.delete({
-    where: {
-        id: like.id
-    }
-})
-
- return c.json({
-    message: "Like removed successfully",
-
-   })
-}catch(error){
-    c.status(500)
-    return c.json({
-        message:"unable to unlike"
-    })
-
-}
 
 
 })
