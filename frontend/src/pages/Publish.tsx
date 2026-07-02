@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { Navbar } from '../components/Navbar'
 import axios from 'axios'
 import { BACKEND_URL } from '../config'
@@ -25,7 +25,7 @@ const Publish = () => {
     try {
 
       const token = localStorage.getItem("token")
-      const response = await axios.post(`${BACKEND_URL}/api/v1/blog`,
+       await axios.post(`${BACKEND_URL}/api/v1/blog`,
         { title, content },
         { headers: { Authorization: token || "" } }
       )
