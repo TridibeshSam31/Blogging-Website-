@@ -2,14 +2,29 @@ import { useState, useEffect } from 'react'
 import axios from "axios"
 import { BACKEND_URL } from "../config"
 
-export interface Blog {
-  "content": string,
-  "title": string,
-  "id": number,
-  "author": {
-    "name": string
-  }
+export interface Comment {
+  id: string
+  comment: string
+  authorId: string
+  author: { name: string }
 }
+
+export interface Like {
+  id: string
+  userId: string
+}
+
+export interface Blog {
+  id: string
+  title: string
+  content: string
+  createdAt: string
+  authorId: string
+  author: { name: string }
+  comments: Comment[]
+  likes: Like[]
+}
+
 
 // Fetches a SINGLE blog by id
 const useBlog = ({ id }: { id: string }) => {

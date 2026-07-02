@@ -131,14 +131,39 @@ blogRouter.get('/:id', async (c) => {
                 id: true,
                 content: true,
                 title: true,
+                createdAt: true,
+                authorId: true,
+
                 author: {
                     select: {
                         name: true
+                    }
+                },
+                comments: {
+                    select: {
+                        id: true,
+                        comment: true,
+                        authorId: true,
+                        author: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: "desc"
+                    }
+                },
+                likes: {
+                    select: {
+                        id: true,
+                        userId: true
                     }
                 }
             }
 
         })
+
         return c.json({
             blog
         })

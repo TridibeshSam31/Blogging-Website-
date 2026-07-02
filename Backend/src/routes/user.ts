@@ -16,11 +16,17 @@ export const userRouter = new Hono<{
 
 userRouter.post('/signup',async(c)=>{
     const body = await c.req.json()
-    const {success} = signupInput.safeParse(body)
-    if (!success) {
+
+    
+    if (!body.username || !body.password || typeof body.username !== 'string' || typeof body.password !== 'string') {
         c.status(411)
-        return c.json({message:"Inputs not correct"})
+        return c.json({message:"Username and password are required"})
     }
+    if (body.password.length < 6) {
+        c.status(411)
+        return c.json({message:"Password must be at least 6 characters"})
+    }
+
     const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
    }).$extends(withAccelerate())
@@ -36,10 +42,16 @@ userRouter.post('/signup',async(c)=>{
     const jwt = await sign({
         id:user.id
     },c.env.JWT_SECRET)
-    return c.text(jwt)
-   } catch (error) {
-     c.status(411)
-     return c.text('Invalid data')
+    return c.json({ token: jwt, userId: user.id })
+   } catch (error: any) {
+     console.error('Signup error:', error?.message || error)
+     // Unique constraint = username already exists
+     if (error?.code === 'P2002') {
+       c.status(409)
+       return c.json({ message: 'Username already exists' })
+     }
+     c.status(500)
+     return c.json({ message: error?.message || 'Internal server error' })
    }
 })
 
@@ -70,7 +82,7 @@ userRouter.post('/signin',async(c)=>{
     const jwt = await sign({
         id:user.id
     },c.env.JWT_SECRET)
-    return c.text(jwt)
+    return c.json({ token: jwt, userId: user.id })
    } catch (error) {
      c.status(411)
      return c.text('Invalid data')

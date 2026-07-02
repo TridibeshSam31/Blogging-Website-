@@ -6,6 +6,7 @@ export const Navbar = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("userId")
     navigate("/signin")
   }
 
@@ -25,6 +26,9 @@ export const Navbar = () => {
           >
             + New
           </button>
+        </Link>
+        <Link to={"/my-blogs"} className="text-sm text-gray-600 hover:text-gray-900 font-medium">
+          My Blogs
         </Link>
         <button
           onClick={handleSignOut}
