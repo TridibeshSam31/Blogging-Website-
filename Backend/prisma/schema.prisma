@@ -13,6 +13,8 @@ model User {
   name     String?
   password String
   posts    Post[]
+  comment comment[]
+  likes  like[]
 }
 
 model Post {
@@ -22,4 +24,28 @@ model Post {
   published Boolean @default(false)
   authorId  String
   author    User    @relation(fields: [authorId], references: [id])
+  comments Comment[]
+  likes    like[]
+}
+
+//for like and comments 
+
+model like{
+  id String @id @default(uuid())
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  userId String
+  postId String
+  createdAt DateTime @default(now())
+  
+}
+
+model comment{
+  id String @id @default(uuid())
+  authorId String 
+  postId String 
+  user User @relation(fields: [authorId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  comment String 
+  createdAt DateTime @default(now()) 
 }
