@@ -1,0 +1,310 @@
+ Debugging Journal
+
+
+ 
+Issue 1: Database Connection Error
+Error
+Signin error:
+No database host or connection string was set,
+and key parameters have default values
+(host: localhost, user: undefined, db: undefined)
+Initial Assumption
+DATABASE_URL missing
+.dev.vars not loading
+Cloudflare bindings issue
+Investigation
+
+Checked Wrangler logs:
+
+Using vars defined in .dev.vars
+
+env.DATABASE_URL ("hidden")
+
+Verified:
+
+console.log(c.env.DATABASE_URL)
+
+Output:
+
+postgresql://neondb_owner:...
+
+Database URL was successfully reaching the Worker.
+
+Root Cause
+
+The error message was misleading.
+
+The actual problem was not the environment variable.
+
+Several unrelated issues later caused Prisma to fail before queries executed.
+
+Resolution
+Verified .dev.vars
+Verified Wrangler bindings
+Verified Neon connection
+Continued debugging other layers instead of assuming env issue.
+Issue 2: Wrong Cloudflare Secret
+Problem
+
+Cloudflare Worker Secret contained
+
+prisma+postgres://...
+
+while local development was using
+
+postgresql://...
+Root Cause
+
+Cloudflare dashboard and local environment had different URLs.
+
+Although this was not causing the local issue (wrangler dev uses .dev.vars), it would have broken production deployment.
+
+Resolution
+
+Updated Worker Secret:
+
+DATABASE_URL
+
+to the Neon PostgreSQL URL.
+
+Issue 3: Prisma Driver Adapter Confusion
+Initial Implementation
+const pool = new Pool({
+    connectionString: c.env.DATABASE_URL
+})
+
+const adapter = new PrismaNeon(pool)
+
+Later changed to
+
+const adapter = new PrismaNeon({
+    connectionString: databaseUrl
+})
+Confusion
+
+Different tutorials used different APIs.
+
+Different versions of Prisma Adapter exposed different constructors.
+
+Resolution
+
+Used the constructor matching installed package version.
+
+Verified after updating Prisma packages.
+
+Issue 4: Database Schema Mismatch
+Error
+PostgresError
+
+22P02
+
+invalid input syntax for type integer
+
+"9ebe86ac-7861-4f7d-8b34-7bd54ab9c274"
+Meaning
+
+Prisma generated
+
+UUID
+
+Database expected
+
+INTEGER
+Root Cause
+
+Database schema and Prisma schema were different.
+
+Prisma:
+
+id String @id @default(uuid())
+
+Database:
+
+INTEGER
+
+Old migrations had created integer IDs.
+
+Later schema changed to UUID.
+
+Migration was never applied.
+
+Resolution
+
+Reset database
+
+npx prisma migrate reset
+
+Generated Prisma Client
+
+npx prisma generate
+
+Database schema now matched Prisma schema.
+
+Issue 5: db pull Overwrote Schema
+Problem
+
+Running
+
+npx prisma db pull
+
+changed
+
+schema.prisma
+
+Unexpectedly.
+
+Root Cause
+
+db pull treats the database as the source of truth.
+
+It overwrites Prisma schema.
+
+Resolution
+
+Restore schema from Git.
+
+Never use
+
+db pull
+
+unless intentionally synchronizing Prisma with an existing database.
+
+Issue 6: JWT Verification Failed
+Error
+403 Forbidden
+
+You are not logged in
+Investigation
+
+Verified
+
+localStorage token
+
+Token existed.
+
+Frontend was sending Authorization header correctly.
+
+Root Cause
+
+JWT verification middleware failed.
+
+Actual hidden error:
+
+JwtAlgorithmRequired
+
+JWT verification requires "alg"
+option to be specified.
+Issue 7: Hono JWT API Change
+Error
+JwtAlgorithmRequired
+
+JWT verification requires "alg"
+option to be specified.
+Old Code
+verify(token, secret)
+New API
+verify(token, secret, "HS256")
+Resolution
+
+Updated middleware
+
+const user = await verify(
+    token,
+    c.env.JWT_SECRET,
+    "HS256"
+)
+
+Authentication immediately started working.
+
+Issue 8: Blog Routes Returning 403
+Error
+POST /blog
+
+403 Forbidden
+Investigation
+
+Frontend:
+
+Authorization: token
+
+Backend:
+
+verify(...)
+
+Problem wasn't frontend.
+
+JWT verification itself was failing due to missing algorithm.
+
+Resolution
+
+Fixed verify()
+
+verify(token, secret, "HS256")
+
+All authenticated routes started working.
+
+Issue 9: Prisma Validation
+
+Verified
+
+npx prisma validate
+
+Output
+
+Schema valid
+
+Meaning
+
+Prisma schema correct
+Generator correct
+Datasource correct
+
+This eliminated Prisma configuration as the root cause.
+
+Issue 10: Neon Connectivity
+
+Verified
+
+SELECT NOW()
+
+using
+
+Pool.query()
+
+Successfully returned
+
+Current Timestamp
+
+Meaning
+
+Database connectivity itself was never broken.
+
+Final Lessons Learned
+Debug layer-by-layer
+
+Never assume database is broken because Prisma throws an error.
+
+Check in order:
+
+Environment Variables
+Connection String
+Database Connectivity
+ORM Configuration
+Schema
+Migrations
+Runtime
+Authentication
+Useful Commands
+npm run dev
+npx prisma validate
+npx prisma generate
+npx prisma migrate reset
+npx prisma migrate status
+npx prisma db pull
+Biggest Takeaways
+prisma db pull overwrites your schema.
+prisma migrate reset recreates the database from migrations.
+Schema and database must always match.
+Cloudflare wrangler dev uses .dev.vars, not dashboard secrets.
+JWT verification APIs can change between framework versions—always check library release notes when upgrading.
+Debug one layer at a time. Don't jump between environment variables, ORM, frontend, and authentication simultaneously. Eliminate possibilities systematically.
