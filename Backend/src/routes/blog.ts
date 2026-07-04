@@ -145,7 +145,7 @@ blogRouter.get('/:id', async (c) => {
                         id: true,
                         comment: true,
                         authorId: true,
-                        author: {
+                        user: {
                             select: {
                                 name: true
                             }
@@ -169,10 +169,14 @@ blogRouter.get('/:id', async (c) => {
             blog
         })
     } catch (error) {
-        c.status(411)
-        return c.json({
-            message: "Error while fetching blog post"
-        })
+        console.error("GET BLOG ERROR:", error);
+
+        return c.json(
+            {
+                error: String(error)
+            },
+            500
+        );
     }
 
 })

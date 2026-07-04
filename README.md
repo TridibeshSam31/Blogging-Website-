@@ -1,173 +1,308 @@
-# LogVerse — A Modern Blogging Platform
+# 🪐 LogVerse — Modern Serverless Blogging Platform
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-success?style=for-the-badge&logo=vercel&logoColor=white)](https://blogging-website-frontend-9f831feu6.vercel.app)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
 
-A full-stack blogging platform built with Hono, Cloudflare Workers, React, and Prisma. LogVerse provides a scalable, serverless architecture for creating and managing blog content.
+LogVerse is a premium, full-stack, serverless blogging platform designed for high performance, infinite scalability, and type safety. Built as a monorepo, it leverages a React frontend deployed on Vercel, and a serverless Hono API deployed on Cloudflare Workers communicating with Neon PostgreSQL database through Prisma ORM.
 
-## 🚀 Tech Stack
+---
 
-**Frontend:**
-- React
-- TypeScript
-- TailwindCSS
-- React Router DOM
+## 📸 Application Showcases
 
-**Backend:**
-- Hono (Web Framework)
-- Cloudflare Workers (Serverless Runtime)
-- Prisma ORM
-- PostgreSQL Database
-- Prisma Accelerate (Connection Pooling)
+### 🔑 Authentication Flow
+Secure, interactive authorization system with custom forms and professional client validation.
+<div align="center">
+  <table border="0">
+    <tr>
+      <td width="50%">
+        <p align="center"><b>Sign In Page</b></p>
+        <img src="screenshots/signin.png" alt="Sign In Page" width="100%"/>
+      </td>
+      <td width="50%">
+        <p align="center"><b>Sign Up Page</b></p>
+        <img src="screenshots/signup.png" alt="Sign Up Page" width="100%"/>
+      </td>
+    </tr>
+  </table>
+</div>
 
-**Validation & Type Safety:**
-- Zod (Runtime Validation)
-- TypeScript (Type Safety)
-- Shared Types via Common Package
+### 📰 Dashboard & Feed
+A minimal, clean, and elegant feed showing articles sorted chronologically with read-time calculations.
+<p align="center">
+  <img src="screenshots/feed.png" alt="LogVerse Main Feed" width="100%"/>
+</p>
 
-**Authentication:**
-- JWT (JSON Web Tokens)
+### ✍️ Publish New Articles
+Write and distribute content with a clean, distracted-free writing workspace.
+<p align="center">
+  <img src="screenshots/publish.png" alt="Create New Post" width="100%"/>
+</p>
 
-## 📁 Project Structure
+### 👤 Profile & Dashboard States
+Responsive empty states and lists of user-authored posts.
+<p align="center">
+  <img src="screenshots/my_blogs.png" alt="My Blogs" width="100%"/>
+</p>
+
+---
+
+## ⚡ Key Features
+
+- 🌐 **Serverless Architecture**: Instant loading and global distribution via Cloudflare Workers.
+- 🔗 **Full Stack Type-Safety**: Sharing data schemas and validation models between frontend and backend via a shared `common` module.
+- 🔐 **Stateless Security**: Secure JWT validation using modern cryptography.
+- 🐘 **Reliable Database**: PostgreSQL hosted on Neon DB with connection-pooling using Prisma Accelerate.
+- ⚡ **Lightweight Backend Framework**: Fast route processing with Hono framework.
+- 🛡️ **Defensive Validation**: Custom payload cleaning using Zod schemas.
+- 💅 **Polished UI**: Modern typography, responsive panels, clean loaders, and micro-interactions powered by TailwindCSS.
+
+---
+
+## 🏗️ Architecture & Data Flow
+
+```mermaid
+graph TD
+    A[React Client - Vercel] <-->|HTTP Request + JWT| B(Hono API - Cloudflare Worker)
+    B <-->|Prisma ORM + driverAdapters| C[(Neon PostgreSQL Serverless)]
+    D[Shared 'common' Package] -.->|Zod Validation / Types| A
+    D -.->|Zod Validation / Types| B
+```
+
+---
+
+## 📁 Directory Structure
 
 ```
-logverse/
-├── backend/          # Cloudflare Workers API
-├── frontend/         # React application
-└── common/          # Shared types and validation
+Blogging/
+├── Backend/            # Hono API + Prisma Database Layer
+├── frontend/           # React SPA Client App
+├── common/             # Shared validation schemas & Type declarations
+└── screenshots/        # Application showcase images
 ```
 
-## ⚙️ Environment Setup
+---
 
-### 🔧 Backend `.env`
+## ⚙️ Development Setup & Installation
 
+### Prerequisite Environment Configurations
+
+#### 🔑 Backend Secrets (`Backend/.env`)
+Create a `.env` file in the `Backend` directory:
 ```env
-DATABASE_URL="postgres://username:password@host/db"
-JWT_SECRET="your_jwt_secret"
+DATABASE_URL="postgresql://neondb_owner:YOUR_NEON_PASSWORD@host/neondb?sslmode=require"
+JWT_SECRET="your-ultra-secure-jwt-key"
 ```
 
-### ⚙️ Cloudflare Configuration (`wrangler.toml`)
+#### ⚙️ Cloudflare Local Secrets (`Backend/.dev.vars`)
+Create a `.dev.vars` file in the `Backend` directory for local Cloudflare Worker emulation:
+```env
+DATABASE_URL="postgresql://neondb_owner:YOUR_NEON_PASSWORD@host/neondb?sslmode=require"
+JWT_SECRET="your-ultra-secure-jwt-key"
+```
 
+#### 🌩️ Wrangler Configuration (`Backend/wrangler.toml`)
+Ensure Wrangler matches serverless environment specifications:
 ```toml
-name = "logverse-backend"
+name = "Backend"
 compatibility_date = "2023-12-01"
 
 [vars]
-DATABASE_URL = "your_prisma_accelerate_connection_url"
-JWT_SECRET = "your_jwt_secret"
+DATABASE_URL = "postgresql://neondb_owner:YOUR_NEON_PASSWORD@host/neondb?sslmode=require"
+JWT_SECRET = "your-ultra-secure-jwt-key"
 ```
 
-⚠️ **Important:** Never commit `.env` files or production secrets to GitHub. Always include `.env` in `.gitignore`.
+---
 
-## 🛠️ Installation & Running Locally
+### 🛠️ Local Build Sequence
 
-### Backend Setup
+Follow this step-by-step setup to spin up the monorepo:
 
-```bash
-cd backend
-npm install
-npx prisma init
-npx prisma migrate dev --name init_schema
-npx prisma generate --no-engine
-npm run dev
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Common Package Setup (Monorepo)
-
+#### Step 1: Install & Build Common Schema package
 ```bash
 cd common
 npm install
 npm run build
 ```
 
-To link packages locally:
-
+#### Step 2: Configure & Run Backend Database & server
 ```bash
-npm run dev --workspace=backend
-npm run dev --workspace=frontend
+cd ../Backend
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
 ```
 
-## 🔐 Authentication Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/user/signup` | Register a new user |
-| `POST` | `/api/v1/user/signin` | Login and receive JWT |
-
-## 📰 Blog Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/blog` | Create a new blog (requires JWT) |
-| `PUT` | `/api/v1/blog` | Update an existing blog (requires JWT) |
-| `GET` | `/api/v1/blog/:id` | Fetch a single blog |
-| `GET` | `/api/v1/blog/bulk` | Fetch all blogs |
-
-## 🧱 Middleware
-
-- **JWT Middleware:** Verifies token and attaches user ID to context.
-- **Prisma Middleware:** (Optional) Initializes Prisma globally across routes.
-
-## 🧩 Validation Example (Zod)
-
-```typescript
-import { z } from "zod";
-
-export const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-export type SignupInput = z.infer<typeof signupSchema>;
+#### Step 3: Launch React Frontend
+```bash
+cd ../frontend
+npm install
+npm run dev
 ```
 
-## ☁️ Deployment (Cloudflare Workers)
+---
 
+## 🗄️ Database Schema (Prisma Models)
+
+```prisma
+model User {
+  id       String    @id @default(uuid())
+  username String    @unique
+  name     String?
+  password String
+  posts    Post[]
+  comment  comment[]
+  likes    like[]
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  published Boolean   @default(false)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
+  comments  comment[]
+  likes     like[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model like {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+}
+
+model comment {
+  id        String   @id @default(uuid())
+  authorId  String 
+  postId    String 
+  user      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   String 
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+}
+```
+
+---
+
+## 📡 API Specification Reference
+
+### 🔐 Authentication Routes
+
+| Route | Method | Payload | Headers | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/v1/user/signup` | `POST` | `SignupInput` | None | Registers a new account, returns JWT token. |
+| `/api/v1/user/signin` | `POST` | `SigninInput` | None | Authenticates user credentials, returns JWT token. |
+
+### 📰 Blog Content Routes
+
+| Route | Method | Payload | Headers | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/v1/blog` | `POST` | `CreatePostInput` | `Authorization: <JWT>` | Publishes a new blog post. |
+| `/api/v1/blog` | `PUT` | `UpdatePostInput` | `Authorization: <JWT>` | Updates an existing post's text. |
+| `/api/v1/blog/:id` | `GET` | None | `Authorization: <JWT>` | Retrieves a single post (with comments & likes). |
+| `/api/v1/blog/bulk` | `GET` | None | `Authorization: <JWT>` | Returns feed posts. |
+| `/api/v1/blog/me/blogs` | `GET` | None | `Authorization: <JWT>` | Retrieves all posts authored by the logged-in user. |
+| `/api/v1/blog/:id` | `DELETE` | None | `Authorization: <JWT>` | Deletes a specific blog post by ID (Author only). |
+
+### 💬 Comment Routes
+
+| Route | Method | Payload | Headers | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/v1/blog/:id/comment` | `POST` | `{ comment: string }` | `Authorization: <JWT>` | Adds a new comment to a post. |
+| `/api/v1/blog/:id/comment/:commentId` | `PATCH` | `{ comment: string }` | `Authorization: <JWT>` | Modifies an existing comment (Author only). |
+| `/api/v1/blog/:id/comment/:commentId` | `DELETE` | None | `Authorization: <JWT>` | Deletes a comment by ID (Author only). |
+
+### 👍 Like Routes
+
+| Route | Method | Payload | Headers | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/v1/blog/:id/like` | `POST` | None | `Authorization: <JWT>` | Likes a blog post (Max 1 per user). |
+| `/api/v1/blog/:id/like/:likeId` | `DELETE` | None | `Authorization: <JWT>` | Unlikes a blog post by ID. |
+
+---
+
+## 🚀 Deployment Guide
+
+### Backend (Cloudflare Workers)
+Authenticate Cloudflare CLI and deploy worker instance:
 ```bash
+cd Backend
 npx wrangler login
 npm run deploy
 ```
+*Note: Make sure to define production secrets `DATABASE_URL` and `JWT_SECRET` in your Cloudflare dashboard.*
 
-Once deployed, go to **Cloudflare Dashboard → Workers → Settings** and add the environment variables `DATABASE_URL` and `JWT_SECRET`.
+### Frontend (Vercel)
+The client frontend is configured to deploy instantly on Vercel. 
+Simply push the code to a Git repository, link it to Vercel, set the environment variables to point to your live Cloudflare Worker URL, and deploy.
 
-## 👨‍💻 Author
+---
 
-**👤 Tridibesh Samantroy**
+## 📓 Real-World Engineering Insights & Troubleshooting
 
-🎓 Student
+During development, we resolved several architecture constraints. Below are key insights:
 
-🚀 Passionate about building real-world, scalable applications using modern web technologies.
+<details>
+<summary>🛠️ Click to expand development troubleshooting notes</summary>
 
-### 📬 Connect with me:
+### 1. Cloudflare Workers vs Neon DB Driver Adapters
+* **Issue**: Standard Node database clients rely on native socket pools which fail inside the V8 serverless worker runtime.
+* **Solution**: Configured Prisma with the `driverAdapters` preview feature and initialized the client using serverless Neon connection pool adapters:
+  ```typescript
+  import { PrismaNeon } from '@prisma/adapter-neon'
+  import { Pool } from '@neondatabase/serverless'
+  // Initialized correctly in Worker request execution context
+  ```
 
-- GitHub: [@tridibesh](https://github.com/TridibeshSam31)
-- LinkedIn: [Tridibesh Samantroy](www.linkedin.com/in/tridibesh-samantroy-572538329)
+### 2. Upgrading Hono JWT Signature Parameters
+* **Issue**: Transitioning across newer Hono versions generated runtime `JwtAlgorithmRequired` errors due to strict schema changes in verification methods.
+* **Solution**: Reconfigured validation middlewares to explicitly supply matching algorithms:
+  ```diff
+  - verify(token, secret)
+  + verify(token, secret, "HS256")
+  ```
 
-## 🏁 Future Improvements
+### 3. Database Schema Re-Synchronization
+* **Issue**: Local database structures can fall out of sync with Prisma models, causing schema mismatches (`invalid input syntax for type integer`).
+* **Solution**: Do not run `db pull` directly as it overrides your current configuration. Instead, update your `schema.prisma` and reset database schema safely with:
+  ```bash
+  npx prisma migrate reset
+  ```
+</details>
 
-- 🪶 Add a rich-text editor (Quill.js / TipTap)
-- 💬 Enable comments and likes
-- 📸 Support image uploads via Cloudflare R2
-- 🔍 Implement search, filters, and pagination
-- 📊 Build author dashboard with analytics
+## 🔮 Roadmap & Future Scope
 
-## 🧭 References
+Here is a list of features slated for upcoming releases to make LogVerse a more robust content publishing platform:
 
-- [Hono Documentation](https://hono.dev)
-- [Prisma Accelerate](https://www.prisma.io/data-platform/accelerate)
-- [Cloudflare Workers](https://developers.cloudflare.com/workers)
-- [Zod Validation](https://zod.dev)
+- ✍️ **Rich-Text Editor Integration**: Introduce a professional formatting workspace using **Quill** / **Quillbot** / **TipTap** on the frontend, enabling authors to format text, highlight code snippets, embed media, and draft cleanly.
+- 🖼️ **Media & Image Support**: Implement secure image uploads powered by **Cloudflare R2** serverless object storage and **Cloudinary** for transformations, dynamic scaling, image compression, and high-performance CDN delivery.
+- 🔍 **Search, Filters & Pagination**: Build fuzzy search algorithms and category tagging, supported by server-side cursor-based pagination to optimize database performance for large feeds.
+- 📊 **Creator Analytics Dashboard**: Design interactive charts displaying read counts, likes over time, comment velocity, and follower metrics.
 
+---
+
+## 👨‍💻 Author & Developer
+
+**Tridibesh Samantroy**
+* 🎓 Student Developer
+* 🚀 Passionate about high-throughput web architectures, Edge environments, and Serverless cloud operations.
+
+### Let's Connect!
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/TridibeshSam31)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/tridibesh-samantroy-572538329)
+
+---
+*Developed with ❤️ as a modern serverless application.*
